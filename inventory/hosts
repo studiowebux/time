@@ -1,0 +1,19 @@
+---
+all:
+  vars:
+    aws_region: 'ca-central-1'
+
+    tenant: 'time'
+    service_name: 'frontend'
+
+    application_stack_name: '{{ tenant }}-{{ service_name }}-{{ stage }}'
+    acm_stack_name: '{{ tenant }}-acm-{{ stage }}'
+
+    hosted_zone_id: 'Z259V6F2G1HA2O' # webuxlab.com
+    s3_bucket_name: 'www.{{ domain_name }}'
+
+production:
+  hosts:
+    studiowebux:
+      stage: 'prod'
+      domain_name: 'time.webuxlab.com'

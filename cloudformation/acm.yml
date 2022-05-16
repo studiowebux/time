@@ -1,0 +1,26 @@
+# Studio Webux S.E.N.C @ 2021
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Webux Lab - Certificate for CloudFront
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Frontend Domain Name
+
+Resources:
+  FrontendCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      ValidationMethod: DNS
+      SubjectAlternativeNames:
+        - !Ref DomainName
+        - !Sub 'www.${DomainName}'
+
+Outputs:
+  FrontendCertificateArn:
+    Value: !Ref FrontendCertificate
+    Description: Frontend Certificate Arn
+    Export:
+      Name: !Sub '${AWS::StackName}:FrontendCertificateArn'

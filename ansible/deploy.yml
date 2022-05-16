@@ -1,0 +1,75 @@
+---
+- name: Deploy frontend application
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Create/Update ACM Cloudformation stack
+      amazon.aws.cloudformation:
+        stack_name: '{{ acm_stack_name }}'
+        state: 'present'
+        region: 'us-east-1'
+        disable_rollback: false
+        template: '../cloudformation/acm.yml'
+        template_parameters:
+          DomainName: '{{ domain_name }}'
+        tags:
+          Stack: '{{ acm_stack_name }}'
+          Stage: '{{ stage }}'
+          Tenant: '{{ tenant }}'
+
+    - name: Retrieve acm certificate arn
+      amazon.aws.cloudformation_info:
+        stack_name: '{{ acm_stack_name }}'
+        aws_region: 'us-east-1'
+      register: acm_info
+
+    - debug:
+        msg: '{{ acm_info }}'
+
+    - name: Create/Update Application Cloudformation stack
+      amazon.aws.cloudformation:
+        stack_name: '{{ application_stack_name }}'
+        state: 'present'
+        region: '{{ aws_region }}'
+        disable_rollback: false
+        template: '../cloudformation/application.yml'
+        template_parameters:
+          Tenant: '{{ tenant }}'
+          HostedZoneId: '{{ hosted_zone_id }}'
+          DomainName: '{{ domain_name }}'
+          Stage: '{{ stage }}'
+          FrontendCertificate: '{{ acm_info.cloudformation[acm_stack_name].stack_outputs.FrontendCertificateArn }}'
+        tags:
+          Stack: '{{ application_stack_name }}'
+          Stage: '{{ stage }}'
+          Tenant: '{{ tenant }}'
+
+    - name: Build Frontend
+      ansible.builtin.shell: |
+        npm ci
+        npm run build -- --mode=production
+      args:
+        chdir: ../www
+
+    - name: Sync local files to S3
+      ansible.builtin.shell: aws s3 sync --exclude .DS_Store ./dist/ s3://{{ s3_bucket_name }}
+      args:
+        chdir: ../www
+
+    - name: Retrieve Cloudfront distribution id
+      amazon.aws.cloudformation_info:
+        stack_name: '{{ application_stack_name }}'
+        aws_region: '{{ aws_region }}'
+      register: cfn_info
+
+    - debug:
+        msg: '{{ cfn_info }}'
+
+    - name: Invalidate Cloudformation cache
+      ansible.builtin.shell: |
+        aws cloudfront \
+          create-invalidation \
+          --distribution-id {{ cfn_info.cloudformation[application_stack_name].stack_outputs.CloudFrontDistributionId }} \
+          --paths "/*"
