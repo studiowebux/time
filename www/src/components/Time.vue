@@ -50,7 +50,9 @@
 </template>
 
 <script>
-import { secondsToMinutes, hoursToSeconds, minutesToSeconds, secondsToHours } from 'date-fns';
+import {
+  secondsToMinutes, hoursToSeconds, minutesToSeconds, secondsToHours,
+} from 'date-fns';
 
 export default {
   name: 'TimeComponent',
