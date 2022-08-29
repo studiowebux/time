@@ -50,9 +50,7 @@
 </template>
 
 <script>
-import {
-  secondsToMinutes, hoursToSeconds, minutesToSeconds, secondsToHours,
-} from 'date-fns';
+import { secondsToMinutes, hoursToSeconds, minutesToSeconds, secondsToHours } from 'date-fns';
 
 export default {
   name: 'TimeComponent',
@@ -73,6 +71,13 @@ export default {
   },
 
   methods: {
+    doubleDigit(number) {
+      if (Number.isNaN(number)) {
+        return '00';
+      }
+      return (number < 10 ? '0' : '') + number.toString();
+    },
+
     reload() {
       const t = this.expectedTime.split(':');
       const expectedSeconds = hoursToSeconds(t[0]) + minutesToSeconds(t[1]);
@@ -80,17 +85,20 @@ export default {
       const a = this.workedTime.split(':');
       const actualSeconds = hoursToSeconds(a[0]) + minutesToSeconds(a[1]);
 
-      this.time = secondsToMinutes(actualSeconds - expectedSeconds);
-      this.diff = `${secondsToHours(actualSeconds - expectedSeconds)}:${
-        secondsToMinutes(actualSeconds - expectedSeconds) % 60
-      }`;
+      this.time = this.doubleDigit(secondsToMinutes(actualSeconds - expectedSeconds));
+      this.diff = `${this.doubleDigit(
+        secondsToHours(actualSeconds - expectedSeconds),
+      )}:${this.doubleDigit(secondsToMinutes(actualSeconds - expectedSeconds) % 60)}`;
 
+      console.debug(`${actualSeconds} < ${expectedSeconds}`);
       if (actualSeconds < expectedSeconds) {
         this.symbol = 'Missing';
-        this.time = secondsToMinutes(expectedSeconds - actualSeconds);
-        this.diff = `${secondsToHours(expectedSeconds - actualSeconds)}:${
-          secondsToMinutes(expectedSeconds - actualSeconds) % 60
-        }`;
+        this.time = this.doubleDigit(secondsToMinutes(expectedSeconds - actualSeconds));
+        this.diff = `${this.doubleDigit(
+          secondsToHours(expectedSeconds - actualSeconds),
+        )}:${this.doubleDigit(secondsToMinutes(expectedSeconds - actualSeconds) % 60)}`;
+      } else {
+        this.symbol = '';
       }
     },
   },
