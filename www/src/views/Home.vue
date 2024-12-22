@@ -5,7 +5,7 @@
     <footer class="footer mt-3 mb-5 text-center">
       <p>
         <i class="bi bi-box"></i>&nbsp;Created by
-        <a href="https://studiowebux.com" target="_blank">Studio Webux S.E.N.C</a>
+        <a href="https://studiowebux.com" target="_blank">Studio Webux</a>
       </p>
       <p>
         <i class="bi bi-chat"></i>&nbsp;Blog

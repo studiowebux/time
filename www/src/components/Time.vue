@@ -90,7 +90,6 @@ export default {
         secondsToHours(actualSeconds - expectedSeconds),
       )}:${this.doubleDigit(secondsToMinutes(actualSeconds - expectedSeconds) % 60)}`;
 
-      console.debug(`${actualSeconds} < ${expectedSeconds}`);
       if (actualSeconds < expectedSeconds) {
         this.symbol = 'Missing';
         this.time = this.doubleDigit(secondsToMinutes(expectedSeconds - actualSeconds));
